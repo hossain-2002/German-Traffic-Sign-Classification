@@ -1,0 +1,7 @@
+# Streamlit app dependencies (lightweight, no CUDA)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.0+cpu
+torchvision==0.17.0+cpu
+streamlit==1.31.0
+numpy==1.26.3
+Pillow==10.2.0
