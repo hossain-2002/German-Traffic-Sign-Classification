@@ -1,0 +1,45 @@
+name: Train Traffic Sign Classifier
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/**"
+  workflow_dispatch:
+
+env:
+  PYTHONPATH: .
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Note: Actual training is skipped in CI because the dataset is too large.
+      # These steps validate that all modules import correctly.
+
+      - name: Validate PyTorch installation
+        run: python -c "import torch; import torchvision; print('PyTorch:', torch.__version__); print('CUDA available:', torch.cuda.is_available())"
+
+      - name: Validate preprocessing module
+        run: python -c "from src.preprocess import load_and_preprocess_image; print('Preprocessing module OK')"

@@ -1,0 +1,24 @@
+# Deep Learning
+torch==2.2.0
+torchvision==0.17.0
+
+# Image Processing
+opencv-python-headless==4.9.0.80
+Pillow==10.2.0
+
+# Data Handling
+pandas==2.2.0
+numpy==1.26.3
+
+# Visualization
+matplotlib==3.8.2
+seaborn==0.13.1
+
+# Metrics
+scikit-learn==1.4.0
+
+# API Serving
+fastapi==0.109.0
+uvicorn==0.27.0
+pydantic==2.5.3
+python-multipart==0.0.6
