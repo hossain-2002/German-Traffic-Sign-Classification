@@ -5,8 +5,7 @@ data/Meta/
 data/*.npy
 data/*.csv
 
-# Model weights
-models/best_model.pth
+# Model weights (large files)
 models/confusion_matrix.png
 
 # Python
