@@ -1,6 +1,7 @@
-# Deep Learning
-torch==2.2.0
-torchvision==0.17.0
+# Deep Learning (CPU-only for deployment)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.0+cpu
+torchvision==0.17.0+cpu
 
 # Image Processing
 opencv-python-headless==4.9.0.80
