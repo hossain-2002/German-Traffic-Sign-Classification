@@ -1,0 +1,32 @@
+# Data files (too large for GitHub)
+data/Train/
+data/Test/
+data/Meta/
+data/*.npy
+data/*.csv
+
+# Model weights
+models/best_model.pth
+models/confusion_matrix.png
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Test script
+test_api.py
