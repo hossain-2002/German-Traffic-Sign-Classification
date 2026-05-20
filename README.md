@@ -192,7 +192,7 @@ curl -X POST http://localhost:8000/predict \
 
 | Model | Test Accuracy | Training Time | Epochs |
 |-------|--------------|---------------|--------|
-| TrafficSignCNN (ours) | **97.15%** | ~30 min (CPU) | 20 |
+| TrafficSignCNN (ours) | **96.99%** | ~30 min (CPU) | 20 |
 
 ---
 
