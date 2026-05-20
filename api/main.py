@@ -9,12 +9,14 @@ import io
 import os
 import pickle
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 import numpy as np
 import torch
 import torch.nn as nn
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from PIL import Image
 
 # Constants
@@ -196,9 +198,16 @@ def preprocess_image(image_bytes: bytes) -> torch.Tensor:
 # Endpoints
 # ============================================================
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 async def root():
-    """Root endpoint with API information."""
+    """Serve the frontend web page."""
+    template_path = Path(__file__).parent / "templates" / "index.html"
+    return template_path.read_text(encoding="utf-8")
+
+
+@app.get("/api")
+async def api_info():
+    """API information endpoint."""
     return {
         "message": "German Traffic Sign Classification API",
         "status": "running",

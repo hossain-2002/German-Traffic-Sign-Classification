@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚦 German Traffic Sign Classifier</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            padding: 40px 0 30px;
+        }
+        header h1 {
+            font-size: 2.2rem;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        header p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+        .badge-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .badge {
+            background: #334155;
+            color: #94a3b8;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        .upload-area {
+            background: #1e293b;
+            border: 2px dashed #475569;
+            border-radius: 16px;
+            padding: 60px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 30px 0;
+        }
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #3b82f6;
+            background: #1e3a5f;
+        }
+        .upload-area .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        .upload-area h3 {
+            color: #e2e8f0;
+            margin-bottom: 8px;
+        }
+        .upload-area p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        #file-input { display: none; }
+        .preview-section {
+            display: none;
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+        .preview-section.active { display: block; }
+        .preview-grid {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+        @media (max-width: 600px) {
+            .preview-grid { grid-template-columns: 1fr; }
+        }
+        .image-preview {
+            width: 200px;
+            height: 200px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 3px solid #334155;
+        }
+        .result-area h3 {
+            color: #3b82f6;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        .prediction-main {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .prediction-main .class-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #22c55e;
+            margin-bottom: 5px;
+        }
+        .prediction-main .confidence {
+            font-size: 1.1rem;
+            color: #94a3b8;
+        }
+        .confidence-bar {
+            width: 100%;
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .confidence-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #22c55e);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        .top3 { margin-top: 15px; }
+        .top3 h4 {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        .top3-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #0f172a;
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+        .top3-item .name { color: #e2e8f0; font-size: 0.9rem; }
+        .top3-item .conf { color: #3b82f6; font-weight: 600; }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        .loading.active { display: block; }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #334155;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error-msg {
+            background: #7f1d1d;
+            color: #fca5a5;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+        .error-msg.active { display: block; }
+        .btn-reset {
+            background: #334155;
+            color: #e2e8f0;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+        .btn-reset:hover { background: #475569; }
+        footer {
+            text-align: center;
+            padding: 40px 0 20px;
+            color: #475569;
+            font-size: 0.85rem;
+        }
+        footer a { color: #3b82f6; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚦 German Traffic Sign Classifier</h1>
+            <p>Upload a traffic sign image and get instant AI classification</p>
+            <div class="badge-row">
+                <span class="badge">PyTorch CNN</span>
+                <span class="badge">43 Classes</span>
+                <span class="badge">97.15% Accuracy</span>
+                <span class="badge">GTSRB Dataset</span>
+            </div>
+        </header>
+
+        <div class="upload-area" id="upload-area">
+            <div class="icon">📷</div>
+            <h3>Drop your image here</h3>
+            <p>or click to browse • Supports PNG, JPG, JPEG</p>
+            <input type="file" id="file-input" accept="image/*">
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Classifying traffic sign...</p>
+        </div>
+
+        <div class="error-msg" id="error-msg"></div>
+
+        <div class="preview-section" id="result-section">
+            <div class="preview-grid">
+                <img id="preview-img" class="image-preview" src="" alt="Uploaded image">
+                <div class="result-area">
+                    <h3>🎯 Prediction Result</h3>
+                    <div class="prediction-main">
+                        <div class="class-name" id="pred-class"></div>
+                        <div class="confidence" id="pred-confidence"></div>
+                        <div class="confidence-bar">
+                            <div class="fill" id="conf-bar"></div>
+                        </div>
+                    </div>
+                    <div class="top3">
+                        <h4>Top 3 Predictions</h4>
+                        <div id="top3-list"></div>
+                    </div>
+                    <button class="btn-reset" onclick="resetUI()">↺ Try Another Image</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Built with PyTorch & FastAPI • <a href="/docs">API Docs</a> • <a href="https://github.com/hossain-2002/German-Traffic-Sign-Classification" target="_blank">GitHub</a></p>
+        </footer>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const loading = document.getElementById('loading');
+        const errorMsg = document.getElementById('error-msg');
+        const resultSection = document.getElementById('result-section');
+        const previewImg = document.getElementById('preview-img');
+        const predClass = document.getElementById('pred-class');
+        const predConfidence = document.getElementById('pred-confidence');
+        const confBar = document.getElementById('conf-bar');
+        const top3List = document.getElementById('top3-list');
+
+        // Click to upload
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) handleFile(e.target.files[0]);
+        });
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+        });
+
+        async function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showError('Please upload an image file (PNG, JPG, JPEG)');
+                return;
+            }
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (e) => { previewImg.src = e.target.result; };
+            reader.readAsDataURL(file);
+
+            // Show loading
+            uploadArea.style.display = 'none';
+            resultSection.classList.remove('active');
+            errorMsg.classList.remove('active');
+            loading.classList.add('active');
+
+            // Send to API
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'Prediction failed');
+                }
+
+                const data = await response.json();
+                showResult(data);
+            } catch (err) {
+                showError(err.message);
+            }
+        }
+
+        function showResult(data) {
+            loading.classList.remove('active');
+            resultSection.classList.add('active');
+
+            const confPercent = (data.confidence * 100).toFixed(1);
+            predClass.textContent = data.predicted_class_name;
+            predConfidence.textContent = `Class ${data.predicted_class_id} • ${confPercent}% confidence`;
+            confBar.style.width = confPercent + '%';
+
+            top3List.innerHTML = data.top3_predictions.map(p => `
+                <div class="top3-item">
+                    <span class="name">${p.class_name}</span>
+                    <span class="conf">${(p.confidence * 100).toFixed(1)}%</span>
+                </div>
+            `).join('');
+        }
+
+        function showError(msg) {
+            loading.classList.remove('active');
+            errorMsg.textContent = '⚠️ ' + msg;
+            errorMsg.classList.add('active');
+            uploadArea.style.display = 'block';
+        }
+
+        function resetUI() {
+            resultSection.classList.remove('active');
+            errorMsg.classList.remove('active');
+            uploadArea.style.display = 'block';
+            fileInput.value = '';
+        }
+    </script>
+</body>
+</html>
